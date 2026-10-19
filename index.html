@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Product Finder</title>
+</head>
+
+<body>
+
+    <h1>🔎 Product Finder</h1>
+
+    <p>اختاري صورة المنتج:</p>
+
+    <input type="file" id="imageInput" accept="image/*">
+
+    <br><br>
+
+    <img id="preview" style="max-width:300px; display:none;">
+
+    <br><br>
+
+    <button id="analyzeBtn">🔍 تعرّف على المنتج</button>
+
+    <p id="result"></p>
+
+    <script>
+
+        const imageInput = document.getElementById("imageInput");
+        const preview = document.getElementById("preview");
+        const analyzeBtn = document.getElementById("analyzeBtn");
+        const result = document.getElementById("result");
+
+        imageInput.addEventListener("change", function () {
+
+            const file = imageInput.files[0];
+
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = "block";
+            }
+
+        });
+
+        analyzeBtn.addEventListener("click", async function () {
+            console.log("تم الضغط على الزر");
+
+            const file = imageInput.files[0];
+
+            if (!file) {
+                alert("اختاري صورة أولاً");
+                return;
+            }
+
+            const formData = new FormData();
+
+            formData.append("image", file);
+
+            result.innerText = "⏳ جاري رفع الصورة...";
+
+            try {
+
+                const response = await fetch("/analyze", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                const output = data.result || data.error || "لم تظهر نتائج.";
+
+result.replaceChildren();
+result.style.whiteSpace = "pre-wrap";
+
+const urlPattern = /https?:\/\/[^\s]+/g;
+let lastIndex = 0;
+
+for (const match of output.matchAll(urlPattern)) {
+    result.appendChild(
+        document.createTextNode(
+            output.slice(lastIndex, match.index)
+        )
+    );
+
+    const link = document.createElement("a");
+
+    link.href = match[0];
+    link.textContent = "🔎 فتح نتائج البحث في المتجر";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.style.display = "block";
+    link.style.margin = "8px 0";
+    link.style.color = "#1565c0";
+
+    result.appendChild(link);
+
+    lastIndex = match.index + match[0].length;
+}
+
+result.appendChild(
+    document.createTextNode(output.slice(lastIndex))
+);
+
+            } catch (error) {
+
+                result.innerText = "❌ حدث خطأ في الاتصال بالسيرفر";
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>

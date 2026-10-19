@@ -1,0 +1,7 @@
+node_modules/
+.venv312/
+__pycache__/
+.env
+.venv/
+*.pyc
+MANAL - Personal - Shortcut.lnk
